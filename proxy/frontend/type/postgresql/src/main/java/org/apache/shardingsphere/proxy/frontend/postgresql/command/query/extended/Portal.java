@@ -104,7 +104,9 @@ public final class Portal {
      * @throws SQLException SQL exception
      */
     public void bind() throws SQLException {
+        System.out.println("proxyBackendHandler.execute() >>>>> ");
         responseHeader = proxyBackendHandler.execute();
+        System.out.println("proxyBackendHandler.execute() <<<<< ");
     }
     
     /**

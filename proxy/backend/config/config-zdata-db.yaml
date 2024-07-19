@@ -1,0 +1,11 @@
+databaseName: app_zdata_db
+
+dataSources:
+  zdata_db:
+    url: jdbc:mysql://10.1.251.125:3306/datago_db
+    username: datago
+    password: datago@2021
+    connectionTimeoutMilliseconds: 30000
+    idleTimeoutMilliseconds: 60000
+    maxLifetimeMilliseconds: 1800000
+    maxPoolSize: 5

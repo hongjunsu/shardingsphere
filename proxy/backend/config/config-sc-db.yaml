@@ -1,0 +1,11 @@
+databaseName: app_sc_db
+
+dataSources:
+  app1_db:
+    url: jdbc:postgresql://10.19.32.89:31483/postgres
+    username: postgres
+    password: jjyy7788
+    connectionTimeoutMilliseconds: 3000
+    idleTimeoutMilliseconds: 60000
+    maxLifetimeMilliseconds: 1800000
+    maxPoolSize: 5

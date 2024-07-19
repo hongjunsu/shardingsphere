@@ -1,0 +1,16 @@
+databaseName: bj_pg_db
+
+dataSources:
+  bj_pg_db:
+    url: jdbc:postgresql://10.19.87.20:15433/bjirm
+    username: zhjf
+    password: zhjf@2021
+    connectionTimeoutMilliseconds: 3000
+    idleTimeoutMilliseconds: 60000
+    maxLifetimeMilliseconds: 1800000
+    maxPoolSize: 5
+
+rules:
+  - !SINGLE
+    tables:
+      - "*.*.*"

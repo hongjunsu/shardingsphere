@@ -25,10 +25,12 @@ import org.apache.shardingsphere.db.protocol.constant.CommonConstants;
 import org.apache.shardingsphere.db.protocol.constant.DatabaseProtocolServerInfo;
 import org.apache.shardingsphere.infra.autogen.version.ShardingSphereVersion;
 import org.apache.shardingsphere.infra.metadata.database.ShardingSphereDatabase;
+import org.apache.shardingsphere.infra.metadata.database.resource.unit.StorageUnit;
 import org.apache.shardingsphere.mode.manager.ContextManager;
 import org.apache.shardingsphere.proxy.database.DatabaseServerInfo;
 
 import javax.sql.DataSource;
+import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -49,7 +51,11 @@ public final class ShardingSphereProxyVersion {
      */
     public static void setVersion(final ContextManager contextManager) {
         CommonConstants.PROXY_VERSION.set(getProxyVersion());
-        contextManager.getMetaDataContexts().getMetaData().getDatabases().values().forEach(ShardingSphereProxyVersion::setDatabaseVersion);
+        Map<String, ShardingSphereDatabase> databases =  contextManager.getMetaDataContexts().getMetaData().getDatabases();
+        Collection<ShardingSphereDatabase> collections = databases.values();
+        for (ShardingSphereDatabase database : collections) {
+            ShardingSphereProxyVersion.setDatabaseVersion(database);
+        }
     }
     
     private static String getProxyVersion() {
@@ -65,6 +71,7 @@ public final class ShardingSphereProxyVersion {
     private static void setDatabaseVersion(final ShardingSphereDatabase database) {
         Optional<DataSource> dataSource = findDataSourceByProtocolType(database);
         if (!dataSource.isPresent()) {
+            System.out.println("not set db = " + database.getName());
             return;
         }
         DatabaseServerInfo databaseServerInfo = new DatabaseServerInfo(dataSource.get());
@@ -72,11 +79,40 @@ public final class ShardingSphereProxyVersion {
         DatabaseProtocolServerInfo.setProtocolVersion(database.getName(), databaseServerInfo.getDatabaseVersion());
     }
     
-    private static Optional<DataSource> findDataSourceByProtocolType(final ShardingSphereDatabase database) {
+    private static Optional<DataSource> findDataSourceByProtocolType1(final ShardingSphereDatabase database) {
         Optional<String> dataSourceName = database.getResourceMetaData().getStorageUnits().entrySet()
                 .stream().filter(entry -> entry.getValue().getStorageType().equals(database.getProtocolType())).map(Entry::getKey).findFirst();
         Map<String, DataSource> dataSources = database.getResourceMetaData().getStorageUnits().entrySet().stream()
                 .collect(Collectors.toMap(Entry::getKey, entry -> entry.getValue().getDataSource(), (oldValue, currentValue) -> oldValue, LinkedHashMap::new));
         return dataSourceName.flatMap(optional -> Optional.ofNullable(dataSources.get(optional)));
     }
+
+    private static Optional<DataSource> findDataSourceByProtocolType(final ShardingSphereDatabase database) {
+
+
+        // 查找符合条件的数据源名称
+        String dataSourceName = null;
+        for (Map.Entry<String, StorageUnit> entry : database.getResourceMetaData().getStorageUnits().entrySet()) {
+            if (entry.getValue().getStorageType().equals(database.getProtocolType())) {
+                dataSourceName = entry.getKey();
+                break;
+            }
+        }
+
+        // 如果没有找到符合条件的数据源名称，返回null
+        if (dataSourceName == null) {
+            return Optional.empty();
+        }
+
+        // 查找对应的数据源
+        for (Map.Entry<String, StorageUnit> entry : database.getResourceMetaData().getStorageUnits().entrySet()) {
+            if (entry.getKey().equals(dataSourceName)) {
+                return Optional.ofNullable(entry.getValue().getDataSource());
+            }
+        }
+
+        // 如果没有找到数据源，返回null
+        return Optional.empty();
+    }
+
 }

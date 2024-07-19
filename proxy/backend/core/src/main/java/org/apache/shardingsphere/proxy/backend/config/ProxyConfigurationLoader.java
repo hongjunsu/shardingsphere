@@ -35,13 +35,8 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Optional;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -136,10 +131,14 @@ public final class ProxyConfigurationLoader {
         Collection<String> loadedDatabaseNames = new HashSet<>(ruleConfigFiles.length);
         Collection<YamlProxyDatabaseConfiguration> result = new LinkedList<>();
         for (File each : ruleConfigFiles) {
-            loadDatabaseConfiguration(each).ifPresent(optional -> {
-                Preconditions.checkState(loadedDatabaseNames.add(optional.getDatabaseName()), "Database name `%s` must unique at all database configurations.", optional.getDatabaseName());
-                result.add(optional);
-            });
+            Optional<YamlProxyDatabaseConfiguration> optional = loadDatabaseConfiguration(each);
+            if (optional != null) {
+                YamlProxyDatabaseConfiguration config = optional.get();
+                String dbName = config.getDatabaseName();
+                Preconditions.checkState(loadedDatabaseNames.add(dbName), "Database name `%s` must be unique among all database configurations.", dbName);
+                result.add(config);
+            }
+
         }
         return result;
     }

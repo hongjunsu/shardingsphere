@@ -50,7 +50,10 @@ public final class BootstrapInitializer {
     public void init(final YamlProxyConfiguration yamlConfig, final int port, final boolean force) throws SQLException {
         ModeConfiguration modeConfig = null == yamlConfig.getServerConfiguration().getMode() ? null : new YamlModeConfigurationSwapper().swapToObject(yamlConfig.getServerConfiguration().getMode());
         ProxyConfiguration proxyConfig = new YamlProxyConfigurationSwapper().swap(yamlConfig);
+        long t0 = System.currentTimeMillis();
         ContextManager contextManager = createContextManager(proxyConfig, modeConfig, port, force);
+        long t1 = System.currentTimeMillis();
+        System.out.println("createContextManager time (ms) =" + (t1 - t0));
         ProxyContext.init(contextManager);
         ShardingSphereProxyVersion.setVersion(contextManager);
     }

@@ -79,6 +79,7 @@ public final class DatabaseTypeEngine {
             return configuredDatabaseType.get();
         }
         Map<String, DataSource> dataSources = getDataSources(databaseConfigs);
+        DataSource dataSource = dataSources.values().iterator().next();
         return dataSources.isEmpty() ? getDefaultStorageType() : getStorageType(dataSources.values().iterator().next());
     }
     
